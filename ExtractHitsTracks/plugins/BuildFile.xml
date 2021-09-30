@@ -22,6 +22,8 @@
 <use name="TrackingTools/Records"/>
 <use name="TrackingTools/TransientTrackingRecHit"/>
 
+<use name="HeterogeneousCore/SonicTriton"/>
+
 <!--<flags CXXFLAGS="-g"/>-->
 <library file="*.cc" name="testExtractHitsPlugins">
   <flags EDM_PLUGIN="1"/>

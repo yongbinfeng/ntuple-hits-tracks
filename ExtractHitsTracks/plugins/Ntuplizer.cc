@@ -151,8 +151,7 @@ Ntuplizer::Ntuplizer( const edm::ParameterSet& cfg ) :
   if (verbose_>2) std::cout << "[Ntuplizer::Ntuplizer]" << std::endl;
   std::cout << "[Ntuplizer::Ntuplizer]" << std::endl
 	    << " Verbosity level: "<< verbose_ << std::endl
-	    << " Number of activeTrackingRegions: "<< activeTrackingRegions_.size() << std::endl
-	    << "Building graph: "<< buildGraph_ << std::endl; 
+	    << " Number of activeTrackingRegions: "<< activeTrackingRegions_.size() << std::endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
