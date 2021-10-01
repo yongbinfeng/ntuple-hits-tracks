@@ -21,8 +21,10 @@ public:
         nnodes_(0),
         nedges_(0),
         threshold_(0.5),
+        epsilon_(0.4),
         vnodes_(nullptr),
-        vedges_(nullptr)
+        vedges_(nullptr),
+        vresults_(nullptr)
         {
   }
 
@@ -112,6 +114,8 @@ public:
         std::cout << " deltaR between " << inode << " and " << onode << " is " << deltaR(inode, onode) << std::endl;
       }
     }
+    std::cout << "fine here " << std::endl;
+    DBScan(distanceM);
   }
 
   ~GNN4TrackingProducer() override = default;
@@ -134,12 +138,84 @@ private:
     return sqrt(dEta*dEta + dPhi*dPhi);
   }
 
+  void DBScan(const std::vector<std::vector<float>>& distanceM) {
+    std::cout << "start DBScan function " << std::endl;
+    std::vector<int> visited;
+    std::vector<int> saved;
+
+    for (int i = 0; i < nnodes_; ++i) {
+      std::cout << "loop over i " << i << " node " << std::endl;
+      if (find(visited.begin(), visited.end(), i) != visited.end())
+        continue;
+
+      visited.push_back(i);
+      std::set<int> neighbourNodeIds;
+      unsigned int numDensityNodes = 0;
+      if (1) {
+        // some requirement on the recHits quality to be filled here
+        numDensityNodes++;
+      }
+      else
+        continue;
+
+      for (int k = 0; k < nnodes_; ++k) {
+        if (k != i and distanceM[i][k] < epsilon_) {
+           neighbourNodeIds.insert(k);
+           if (1) 
+              numDensityNodes++;
+        }
+      }
+
+      std::cout << " fine after neighbourNodeIds " << std::endl;
+
+      if (numDensityNodes < 1) {
+        // mark rechit as noise
+      } else {
+        // a track candidate
+        std::vector<int> track_candidate;
+        std::cout << "initalized a track candiate" << std::endl;
+        track_candidate.push_back(i);
+        saved.push_back(i);
+        for (int id: neighbourNodeIds) {
+          std::cout << "look into neighboring node " << id << std::endl;
+          if (find(visited.begin(), visited.end(), id) == visited.end()) {
+            visited.push_back(id);
+            std::vector<int> neighbourNodeIds2;
+            for (int k = 0; k < nnodes_; ++k) {
+              std::cout << "k " << k << " id " << id << std::endl;
+              if (distanceM[k][id] < epsilon_) {
+                neighbourNodeIds2.push_back(k);
+              }
+            }
+            for (int id2: neighbourNodeIds2) {
+              neighbourNodeIds.insert(id2);
+            }
+          }
+          std::cout << "save id " << id << " to track candidate " << std::endl;
+          if (find(saved.begin(), saved.end(), id) == saved.end())
+            track_candidate.push_back(id);
+        }
+        std::cout << "pusch the track candidate to the collection " << std::endl;
+        if (track_candidate.size() > 0) {
+          std::cout << "do push" << std::endl;
+          vresults_->push_back(track_candidate);
+        }
+        std::cout << "ok after push"<< std::endl;
+      }
+
+      std::cout << " fine after the 1st loop " << std::endl;
+    }
+
+  }
+
   int nnodes_;
   int nedges_;
   float threshold_;
+  float epsilon_;
 
   std::vector<std::vector<float>>* vnodes_;
   std::vector<std::vector<int>>* vedges_;
+  std::vector<std::vector<int>>* vresults_;
 
 };
 
